@@ -2,6 +2,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 
 import logoImg from '../assets/images/logo.svg'
 import deleteImg from '../assets/images/delete.svg'
+import checkImg from '../assets/images/check.svg'
+import answerImg from '../assets/images/answer.svg'
 
 import { Button } from '../components/Button'
 import { Question } from '../components/Questions'
@@ -11,6 +13,7 @@ import { useRoom } from '../hooks/useRoom'
 
 import '../styles/room.scss'
 import { database } from '../services/firebase'
+import { Fragment } from 'react'
 
 type RoomParams = {
     id: string;
@@ -31,9 +34,21 @@ export function AdminRoom() {
         navigate('/');
     }
 
+    async function handleCheckQuestionAsAnswered(questionId: string) {
+        await database.ref(`rooms/${roomId}/questions/${questionId}`).update({
+            isAnswered: true,
+        });
+    }
+
+    async function handleHighlightQuestion(questionId: string) {
+        await database.ref(`rooms/${roomId}/questions/${questionId}`).update({
+            isHighlighted: true,
+        });
+    }
+
     async function handleDeleteQuestion(questionId: string) {
         if (window.confirm('Tem certeza que deseja excluir essa pergunta?')) {
-            const questionRef = await database.ref(`rooms/${roomId}/questions/${questionId}`).remove();
+            await database.ref(`rooms/${roomId}/questions/${questionId}`).remove();
         }
     }
 
@@ -62,10 +77,30 @@ export function AdminRoom() {
                                 key={question.id}
                                 content={question.content}
                                 author={question.author}
+                                isAnswered={question.isAnswered}
+                                isHighlighted={question.isHighlighted}
                             >
+                                {!question.isAnswered && ( //Para ter uma condição para mostrar um trecho de HTML com mais de 1 botão, por exemplo
+                                                           //teria que ter um container por volta, por exemplo uma div, mas isso atrapalharia o CSS,
+                                                           //para isso tem o Fragment que é o <> </>
+                                    <> 
+                                        <button
+                                            type="button"
+                                            onClick={() => handleCheckQuestionAsAnswered(question.id)}
+                                        >
+                                            <img src={checkImg} alt="Marcar pergunta como respondida" />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleHighlightQuestion(question.id)}
+                                        >
+                                            <img src={answerImg} alt="Dar destaque à pergunta" />
+                                        </button>
+                                    </>
+                                )}
                                 <button
                                     type="button"
-                                    onClick={() => handleDeleteQuestion(question.id)}    
+                                    onClick={() => handleDeleteQuestion(question.id)}
                                 >
                                     <img src={deleteImg} alt="Remover pergunta" />
                                 </button>

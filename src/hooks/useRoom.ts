@@ -52,6 +52,7 @@ export function useRoom(roomId: string) {
                     likeId: Object.entries(value.likes ?? {}).find(([key, like]) => like.authorId === user?.id)?.[0], // ?.[0] verifica se não é nulo para poder acessar a posição 0
                 }
             })
+            
 
             setTitle(databaseRoom.title);
             setQuestions(parsedQuestions);
